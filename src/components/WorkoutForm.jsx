@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Save, Share2, Clock, Activity, AlignLeft, CalendarPlus } from 'lucide-react';
+import { Plus, Trash2, Save, Share2, Clock, Activity, AlignLeft, CalendarPlus, Timer } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -26,7 +26,7 @@ export function WorkoutForm({ date, initialData, onSave, onDelete }) {
   }, [date, initialData]);
 
   const addExercise = () => {
-    setExercises([...exercises, { id: Date.now(), name: '', sets: '', reps: '' }]);
+    setExercises([...exercises, { id: Date.now(), name: '', sets: '', reps: '', rest: '' }]);
   };
 
   const updateExercise = (id, field, value) => {
@@ -55,7 +55,11 @@ export function WorkoutForm({ date, initialData, onSave, onDelete }) {
     if (feeling) text += `📝 Ressenti: ${feeling}\n`;
     text += `\n📋 Exercices:\n`;
     exercises.forEach(ex => {
-      if (ex.name) text += `- ${ex.name}: ${ex.sets} séries x ${ex.reps} reps\n`;
+      if (ex.name) {
+        text += `- ${ex.name}: ${ex.sets} séries x ${ex.reps} reps`;
+        if (ex.rest) text += ` (Repos: ${ex.rest})`;
+        text += `\n`;
+      }
     });
 
     navigator.clipboard.writeText(text).then(() => {
@@ -78,7 +82,9 @@ export function WorkoutForm({ date, initialData, onSave, onDelete }) {
     const eventTitle = `Séance de sport - ${exercises.length} exercices`;
     let description = `Ressenti: ${feeling}\\n\\nExercices:\\n`;
     exercises.forEach(ex => {
-        description += `- ${ex.name}: ${ex.sets}x${ex.reps}\\n`;
+        description += `- ${ex.name}: ${ex.sets}x${ex.reps}`;
+        if (ex.rest) description += ` (Repos: ${ex.rest})`;
+        description += `\\n`;
     });
 
     const icsContent = [
@@ -203,6 +209,16 @@ export function WorkoutForm({ date, initialData, onSave, onDelete }) {
                       className="w-full bg-white p-1 px-2 text-sm border border-slate-200 rounded-md outline-none focus:border-blue-500"
                     />
                   </div>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-slate-500 text-xs">
+                    <Timer className="w-3 h-3" />
+                    <input
+                      type="text"
+                      placeholder="Temps de pause (ex: 1m30)"
+                      value={ex.rest || ''}
+                      onChange={(e) => updateExercise(ex.id, 'rest', e.target.value)}
+                      className="flex-1 bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none p-1"
+                    />
                 </div>
                 <button
                   onClick={() => removeExercise(ex.id)}
